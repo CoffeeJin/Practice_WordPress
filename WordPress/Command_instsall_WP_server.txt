@@ -1,0 +1,53 @@
+# 1. install docker
+sudo apt update
+sudo apt install docker.io docker-compose -y
+sudo systemctl enable docker
+
+# 2. create root path and create docker yml file
+mkdir -p ~/wordpress && cd ~/wordpress
+
+nano docker-compose.yml
+
+    version: '3.7'
+
+    services:
+    db:
+        image: mysql:5.7
+        restart: always
+        volumes:
+        - db_data:/var/lib/mysql
+        environment:
+        MYSQL_ROOT_PASSWORD: rootpass
+        MYSQL_DATABASE: wordpress
+        MYSQL_USER: wpuser
+        MYSQL_PASSWORD: wppass
+
+    wordpress:
+        image: wordpress:latest
+        depends_on:
+        - db
+        ports:
+        - "8080:80"
+        restart: always
+        environment:
+        WORDPRESS_DB_HOST: db:3306
+        WORDPRESS_DB_NAME: wordpress
+        WORDPRESS_DB_USER: wpuser
+        WORDPRESS_DB_PASSWORD: wppass
+
+    volumes:
+    db_data:
+
+
+# 3. launch services
+sudo docker-compose up -d
+
+# 4. Initial WordPress
+* access WordPress via browser by internal IP Address + 8080 + /admin
+* Install the basic WP appication
+* Setup https access
+    * Go to Setting/ general
+    * Change both WordPress site url and site URL to Https://domain url
+    * save change
+
+# 5. Enable 
