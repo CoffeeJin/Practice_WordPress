@@ -1,0 +1,23 @@
+Description:
+After deploying a WordPress instance behind Nginx reverse proxy and updating the siteurl to the public domain (e.g., https://chatbot.speedylinkage.com), accessing the site externally resulted in a redirection to the internal IP address (e.g., http://192.168.100.32), causing the page to fail with a “This site can’t be reached” error.
+
+Root Cause:
+During the initial WordPress setup, the site was accessed using the local IP (http://192.168.100.32:8080). As a result, WordPress saved this internal address as the siteurl and home values in the database. Later, when reverse proxying via HTTPS from Nginx, WordPress was unaware that the original request was HTTPS and continued to issue redirects based on its internal HTTP address.
+
+Diagnosis Steps:
+
+Verified that Nginx was correctly proxying requests to 192.168.100.32:8080.
+
+Ran curl -I http://192.168.100.32:8080 and observed a 301 Moved Permanently response redirecting to http://192.168.100.32.
+
+Confirmed that $_SERVER['HTTPS'] was not set in WordPress due to lack of X-Forwarded-Proto handling.
+
+Solution:
+Updated WP-config
+1. sudo docker cp wordpress_wordpress_1:/var/www/html/wp-config.php ./wp-config.php
+2. sudo nano wp-config.php
+3. Add 'if ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
+    $_SERVER['HTTPS'] = 'on';
+' before /* That's all, stop editing! Happy publishing. */
+4. sudo docker cp ./wp-config.php wordpress_wordpress_1:/var/www/html/wp-config.php
+5. sudo docker restart wordpress_wordpress_1

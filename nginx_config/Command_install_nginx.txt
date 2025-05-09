@@ -1,0 +1,37 @@
+# 1. Install nginx on nginx server
+
+# Update
+sudo apt update && sudo apt upgrade -y
+
+# Install Nginx + Certbot
+sudo apt install nginx certbot python3-certbot-nginx -y
+
+# enable firewall and enable relayed ports
+sudo ufw allow OpenSSH
+sudo ufw allow "Nginx Full"
+sudo ufw enable
+
+
+# 2. Create Nginx config file and enbale
+
+sudo nano /etc/nginx/sites-available/wordpress.froggytech.site
+
+# 创建软链接启用配置
+sudo ln -s /etc/nginx/sites-available/wordpress.froggytech.site /etc/nginx/sites-enabled/
+
+# 检查配置是否有误
+sudo nginx -t
+
+# 重载配置
+sudo systemctl reload nginx
+
+
+# 3 install certbot
+
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d wordpress.froggytech.site
+
+# 4. Add Reverse proxy after ssl installed
+sudo nano /etc/nginx/sites-available/di.froggytech.site
+    * Add proxy_set_header X-Forwarded-Proto $scheme;
+sudo systemctl reload nginx
